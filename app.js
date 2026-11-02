@@ -661,11 +661,25 @@ document.querySelector('.tabs').addEventListener('click', (event) => {
 // 新規作成フォーム
 // ===================================================
 
-// 日付を選んだ時点でピッカーを閉じる（毎回チェックマークを押さずに済む）
-document.body.addEventListener('change', (event) => {
-  if (event.target.matches('input[type="date"]') && event.target.value) {
-    event.target.blur();
+// 日付を選んだ時点でピッカーを閉じる（毎回チェックマークを押さずに済む）。
+// ただし iOS はピッカーを開いた瞬間にも当日の日付を入れて変更イベントを出すため、
+// 「開いた直後の自動入力」と「本人が選んだ操作」を時間差で区別する。
+let datePickerOpenedAt = 0;
+
+document.body.addEventListener('focusin', (event) => {
+  if (event.target.matches('input[type="date"]')) {
+    datePickerOpenedAt = Date.now();
   }
+});
+
+document.body.addEventListener('change', (event) => {
+  const el = event.target;
+  if (!el.matches('input[type="date"]') || !el.value) return;
+
+  // 開いて1秒以内の変更は、iOS が勝手に入れたものとみなして閉じない
+  if (Date.now() - datePickerOpenedAt < 1000) return;
+
+  el.blur();
 });
 
 const formEl = document.getElementById('trip-form');
