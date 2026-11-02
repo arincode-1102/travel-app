@@ -63,6 +63,37 @@ function loadTrips() {
 }
 
 // ===================================================
+// 入力中の文字の控え
+// ===================================================
+
+// iOS Safari では、日本語の未確定文字が入ったままボタンを押すと、
+// 確定されずに消えてしまうことがある。
+// 1文字打つごとに控えを取り、保存時に欄が空なら控えを使う。
+const draftValues = new WeakMap();
+
+document.body.addEventListener('input', (event) => {
+  const el = event.target;
+  if (el.matches('input[type="text"], textarea')) {
+    draftValues.set(el, el.value);
+  }
+});
+
+// 入力欄から文字を読み取る（空なら控えを見る）
+function readValue(el) {
+  const current = el.value.trim();
+  if (current) return current;
+  return (draftValues.get(el) || '').trim();
+}
+
+// フォームを空に戻す（控えも一緒に消す）
+function resetForm(formEl) {
+  for (const el of formEl.querySelectorAll('input[type="text"], textarea')) {
+    draftValues.delete(el);
+  }
+  formEl.reset();
+}
+
+// ===================================================
 // 画面の切り替え
 // ===================================================
 
@@ -414,7 +445,7 @@ function openPlanDialog(date, plan = null) {
   planDialogDate = date;
   editingPlanId = plan ? plan.id : null;
 
-  planFormEl.reset();
+  resetForm(planFormEl);
   planErrorEl.hidden = true;
 
   planDialogTitleEl.textContent = plan ? '予定を編集' : '予定を追加';
@@ -478,7 +509,7 @@ document.getElementById('plan-cancel').addEventListener('click', () => {
 planFormEl.addEventListener('submit', (event) => {
   event.preventDefault();
 
-  const title = planTitleEl.value.trim();
+  const title = readValue(planTitleEl);
   const start = planStartEl.value;
   const end = planEndEl.value;
 
@@ -500,8 +531,8 @@ planFormEl.addEventListener('submit', (event) => {
     start,
     end,
     title,
-    place: planPlaceEl.value.trim(),
-    memo: planMemoEl.value.trim(),
+    place: readValue(planPlaceEl),
+    memo: readValue(planMemoEl),
   };
 
   if (editingPlanId) {
@@ -575,7 +606,7 @@ function findItem(itemId) {
 itemFormEl.addEventListener('submit', (event) => {
   event.preventDefault();
 
-  const name = itemInputEl.value.trim();
+  const name = readValue(itemInputEl);
   if (!name) return;
 
   const trip = findTrip(currentTripId);
@@ -585,6 +616,7 @@ itemFormEl.addEventListener('submit', (event) => {
   saveTrips();
   renderItems(trip);
 
+  draftValues.delete(itemInputEl);
   itemInputEl.value = '';
   itemInputEl.focus(); // 続けて入力できるようにする
 });
@@ -674,7 +706,7 @@ let editingTripId = null;
 
 document.getElementById('btn-new-trip').addEventListener('click', () => {
   editingTripId = null;
-  formEl.reset();
+  resetForm(formEl);
   hideFormError();
   editTitleEl.textContent = '新しい旅行';
   showScreen('edit');
@@ -688,6 +720,7 @@ document.getElementById('btn-edit-trip').addEventListener('click', () => {
   editingTripId = trip.id;
   hideFormError();
   editTitleEl.textContent = '旅行を編集';
+  draftValues.delete(inputNameEl);
   inputNameEl.value = trip.name;
   inputStartEl.value = trip.startDate;
   inputEndEl.value = trip.endDate;
@@ -720,7 +753,7 @@ function validateTripInput(name, startDate, endDate) {
 formEl.addEventListener('submit', (event) => {
   event.preventDefault(); // ページの再読み込みを止める
 
-  const name = inputNameEl.value.trim();
+  const name = readValue(inputNameEl);
   const startDate = inputStartEl.value;
   const endDate = inputEndEl.value;
 

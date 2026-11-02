@@ -579,3 +579,24 @@ body {
     overflow: hidden;
   }
 }
+
+/* ---- iOS Safari 向けの補正 ---- */
+/* 日付・時刻の入力欄は、iOS では自前の最低幅を優先して枠からはみ出す。
+   見た目の既定を切って、幅と文字位置を指定し直す。 */
+input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 46px;
+  text-align: left;
+}
+
+/* 入力欄の中身が長くても枠を押し広げないようにする */
+.field,
+.time-row .field {
+  min-width: 0;
+}
