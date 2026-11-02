@@ -71,12 +71,26 @@ function loadTrips() {
 // 1文字打つごとに控えを取り、保存時に欄が空なら控えを使う。
 const draftValues = new WeakMap();
 
-document.body.addEventListener('input', (event) => {
-  const el = event.target;
-  if (el.matches('input[type="text"], textarea')) {
+function rememberValue(el) {
+  if (el && el.matches && el.matches('input[type="text"], textarea')) {
     draftValues.set(el, el.value);
   }
-});
+}
+
+// 1文字打つごとに控える
+document.body.addEventListener('input', (event) => rememberValue(event.target));
+
+// 変換中（未確定）の文字も控える
+document.body.addEventListener('compositionupdate', (event) => rememberValue(event.target));
+
+// ボタンに指が触れた瞬間に、画面上の入力欄をすべて控える。
+// 未確定の文字が消えるのは指を離したあとなので、この時点ならまだ残っている。
+document.body.addEventListener('pointerdown', (event) => {
+  if (!event.target.closest('button')) return;
+  for (const el of document.querySelectorAll('input[type="text"], textarea')) {
+    rememberValue(el);
+  }
+}, true);
 
 // 入力欄から文字を読み取る（空なら控えを見る）
 function readValue(el) {
