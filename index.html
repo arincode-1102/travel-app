@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>旅行管理アプリ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ホーム画面 -->
+  <section class="screen" id="screen-home">
+    <header class="app-header">
+      <h1>旅行一覧</h1>
+    </header>
+    <main class="app-main">
+      <!-- 旅行カードは app.js が作る -->
+      <div id="trip-list"></div>
+      <button class="btn btn-primary" id="btn-new-trip">＋ 新しい旅行</button>
+    </main>
+  </section>
+
+  <!-- 旅行詳細画面 -->
+  <section class="screen" id="screen-detail" hidden>
+    <header class="app-header">
+      <button class="btn-back" data-goto="home">← 一覧</button>
+      <h1 id="detail-title">旅行詳細</h1>
+      <button class="btn-text" type="button" id="btn-edit-trip">編集</button>
+    </header>
+    <p class="detail-dates" id="detail-dates"></p>
+    <div class="tabs" role="tablist">
+      <button class="tab is-active" type="button" data-tab="schedule">日程</button>
+      <button class="tab" type="button" data-tab="items">持ち物</button>
+    </div>
+    <main class="app-main">
+      <!-- 日程タブ -->
+      <div id="tab-schedule">
+        <div id="day-list"></div>
+      </div>
+      <!-- 持ち物タブ -->
+      <div id="tab-items" hidden>
+        <form id="item-form">
+          <input class="input" type="text" id="item-input" placeholder="例：充電器" autocomplete="off">
+          <button class="btn btn-primary" type="submit">追加</button>
+        </form>
+        <p class="item-progress" id="item-progress"></p>
+        <div id="item-list"></div>
+      </div>
+    </main>
+  </section>
+
+  <!-- 編集画面（今回は新規作成のみ） -->
+  <section class="screen" id="screen-edit" hidden>
+    <header class="app-header">
+      <button class="btn-back" type="button" id="btn-edit-back">← 戻る</button>
+      <h1 id="edit-title">新しい旅行</h1>
+    </header>
+    <main class="app-main">
+      <form id="trip-form" novalidate>
+        <label class="field">
+          <span class="field-label">旅行名</span>
+          <input class="input" type="text" id="input-name" placeholder="例：城崎温泉">
+        </label>
+        <label class="field">
+          <span class="field-label">開始日</span>
+          <input class="input" type="date" id="input-start">
+        </label>
+        <label class="field">
+          <span class="field-label">終了日</span>
+          <input class="input" type="date" id="input-end">
+        </label>
+        <p class="error" id="form-error" hidden></p>
+        <button class="btn btn-primary" type="submit">保存する</button>
+      </form>
+    </main>
+  </section>
+
+  <!-- 予定の入力ダイアログ（アプリ全体で1つを使い回す） -->
+  <dialog id="plan-dialog">
+    <form id="plan-form" novalidate>
+      <h2 class="dialog-title" id="plan-dialog-title">予定を追加</h2>
+      <p class="dialog-date" id="plan-dialog-date"></p>
+
+      <div class="time-row">
+        <label class="field">
+          <span class="field-label">開始時刻</span>
+          <input class="input" type="time" id="plan-start">
+        </label>
+        <label class="field">
+          <span class="field-label">終了時刻</span>
+          <input class="input" type="time" id="plan-end">
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="field-label">内容</span>
+        <input class="input" type="text" id="plan-title" placeholder="例：特急に乗車">
+      </label>
+
+      <label class="field">
+        <span class="field-label">場所</span>
+        <input class="input" type="text" id="plan-place" placeholder="例：大阪駅 11番のりば">
+      </label>
+
+      <label class="field">
+        <span class="field-label">メモ</span>
+        <textarea class="input" id="plan-memo" rows="3" placeholder="予約番号、乗り換え、注意事項、URL など"></textarea>
+      </label>
+
+      <p class="error" id="plan-error" hidden></p>
+
+      <div class="dialog-actions">
+        <button class="btn" type="button" id="plan-cancel">キャンセル</button>
+        <button class="btn btn-primary" type="submit">保存する</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

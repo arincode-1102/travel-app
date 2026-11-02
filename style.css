@@ -1,0 +1,581 @@
+/* ---- 全体の下地 ---- */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #1f2328;
+  background: #f5f6f8;
+}
+
+/* ---- 画面 ---- */
+/* .screen が1画面ぶん。表示するのは常に1つだけで、
+   残りは HTML の hidden 属性で隠している（切り替えは app.js） */
+.screen {
+  max-width: 560px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  border-bottom: 1px solid #e3e6ea;
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.app-main {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.placeholder {
+  margin: 0;
+  padding: 24px 16px;
+  border: 1px dashed #c8cdd4;
+  border-radius: 8px;
+  color: #6b7480;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* ---- ボタン ---- */
+.btn {
+  padding: 12px 16px;
+  font-size: 16px;
+  font-family: inherit;
+  color: #1f2328;
+  background: #ffffff;
+  border: 1px solid #c8cdd4;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn:active {
+  background: #eef0f3;
+}
+
+.btn-primary {
+  color: #ffffff;
+  background: #2b6cb0;
+  border-color: #2b6cb0;
+}
+
+.btn-primary:active {
+  background: #24598f;
+}
+
+.btn-back {
+  padding: 4px 8px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #2b6cb0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* ---- 旅行カード（ホーム） ---- */
+#trip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trip-card {
+  width: 100%;
+  padding: 16px;
+  text-align: left;
+  font-family: inherit;
+  background: #ffffff;
+  border: 1px solid #c8cdd4;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.trip-card:active {
+  background: #eef0f3;
+}
+
+.trip-card-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1f2328;
+}
+
+.trip-card-dates {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #6b7480;
+}
+
+.empty {
+  margin: 0;
+  padding: 32px 16px;
+  color: #6b7480;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* ---- フォーム ---- */
+#trip-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px; /* 16px未満だとスマホで自動ズームするため下げない */
+  font-family: inherit;
+  color: #1f2328;
+  background: #ffffff;
+  border: 1px solid #c8cdd4;
+  border-radius: 8px;
+}
+
+.input:focus {
+  outline: 2px solid #2b6cb0;
+  outline-offset: -1px;
+}
+
+.error {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #9b1c1c;
+  background: #fdecec;
+  border-radius: 8px;
+}
+
+/* ---- タブ ---- */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e3e6ea;
+  background: #ffffff;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px 8px;
+  font-size: 15px;
+  font-family: inherit;
+  color: #6b7480;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+.tab.is-active {
+  color: #2b6cb0;
+  font-weight: 600;
+  border-bottom-color: #2b6cb0;
+}
+
+/* ---- 日程（1日ぶんのまとまり） ---- */
+#day-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.day {
+  border: 1px solid #e3e6ea;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* summary の標準の三角を消して、自前の印を出す */
+.day-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #f0f3f7;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.day-header::-webkit-details-marker {
+  display: none;
+}
+
+.day[open] .day-header {
+  border-bottom: 1px solid #e3e6ea;
+}
+
+/* 開閉の印 */
+.day-header::after {
+  content: '▾';
+  margin-left: auto;
+  font-size: 12px;
+  color: #8a929c;
+  transition: transform 0.15s;
+}
+
+.day[open] .day-header::after {
+  transform: rotate(180deg);
+}
+
+.day-badge {
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+  background: #2b6cb0;
+  border-radius: 999px;
+}
+
+.day-count {
+  font-size: 12px;
+  color: #8a929c;
+}
+
+.day-index {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2b6cb0;
+}
+
+.day-date {
+  font-size: 14px;
+  color: #1f2328;
+}
+
+.day-date.is-saturday { color: #1d6fa5; }
+.day-date.is-sunday { color: #a52121; }
+
+.day-body {
+  padding: 12px;
+}
+
+.day-empty {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7480;
+}
+
+/* 詳細画面のヘッダー直下に出す日付 */
+.detail-dates {
+  margin: 0;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #6b7480;
+}
+
+/* ---- 予定 ---- */
+.plan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.plan {
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background: #fafbfc;
+  border: 1px solid #e3e6ea;
+  border-radius: 8px;
+}
+
+.plan-time {
+  flex: 0 0 52px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: #2b6cb0;
+  line-height: 1.4;
+}
+
+.plan-time.is-empty {
+  color: #a3aab4;
+}
+
+.plan-time-end {
+  color: #6b7480;
+}
+
+.plan-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.plan-title {
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.plan-place,
+.plan-memo {
+  margin-top: 2px;
+  font-size: 13px;
+  color: #6b7480;
+  overflow-wrap: anywhere;
+}
+
+.plan-memo {
+  white-space: pre-wrap; /* メモの改行をそのまま表示する */
+}
+
+.btn-add-plan {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #2b6cb0;
+  background: none;
+  border: 1px dashed #b7c3d1;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-add-plan:active {
+  background: #eef3f9;
+}
+
+/* ---- ダイアログ ---- */
+dialog {
+  width: calc(100% - 32px);
+  max-width: 480px;
+  padding: 20px;
+  border: none;
+  border-radius: 12px;
+  color: #1f2328;
+}
+
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+#plan-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dialog-title {
+  margin: 0;
+  font-size: 17px;
+}
+
+.dialog-date {
+  margin: -10px 0 0;
+  font-size: 13px;
+  color: #6b7480;
+}
+
+.time-row {
+  display: flex;
+  gap: 12px;
+}
+
+.time-row .field {
+  flex: 1;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.dialog-actions .btn {
+  flex: 1;
+}
+
+textarea.input {
+  resize: vertical;
+}
+
+/* ---- 予定の削除ボタン ---- */
+.btn-icon {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #8a929c;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-icon:active {
+  color: #9b1c1c;
+  background: #f3f4f6;
+}
+
+/* ---- 持ち物 ---- */
+#item-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+#item-form .input {
+  flex: 1;
+}
+
+#item-form .btn {
+  flex: 0 0 auto;
+}
+
+.item-progress {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #6b7480;
+}
+
+#item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+  border-bottom: 1px solid #eef0f3;
+}
+
+.item-check {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  accent-color: #2b6cb0;
+}
+
+.item-name {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 4px;
+  font-size: 15px;
+  font-family: inherit;
+  color: #1f2328;
+  background: none;
+  border: none;
+  border-radius: 4px;
+}
+
+.item-name:focus {
+  outline: 2px solid #2b6cb0;
+  background: #ffffff;
+}
+
+.item.is-checked .item-name {
+  color: #a3aab4;
+  text-decoration: line-through;
+}
+
+/* ---- ヘッダーの文字ボタン ---- */
+.app-header h1 {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.btn-text {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #2b6cb0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* ---- 旅行カード（削除ボタンつきに変更） ---- */
+.trip-card {
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.trip-card-main {
+  flex: 1;
+  min-width: 0;
+  padding: 16px;
+  text-align: left;
+  font-family: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.trip-card-delete {
+  margin-right: 8px;
+}
+
+/* ---- 今日の日を目立たせる ---- */
+.day:has(.day-badge) {
+  border-color: #2b6cb0;
+}
+
+/* ---- スマホ表示の調整 ---- */
+html {
+  -webkit-text-size-adjust: 100%; /* 横向きにしたとき文字が勝手に拡大しないように */
+}
+
+body {
+  overflow-wrap: break-word;
+}
+
+.screen {
+  /* iPhone の下部（ホームバー）にボタンが隠れないよう余白を足す */
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+}
+
+.app-header {
+  z-index: 10;
+}
+
+/* 画面が広いときは中央寄せのカード風に見せる */
+@media (min-width: 600px) {
+  body {
+    padding: 24px 0;
+  }
+
+  .screen {
+    min-height: auto;
+    border: 1px solid #e3e6ea;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+}
