@@ -63,51 +63,6 @@ function loadTrips() {
 }
 
 // ===================================================
-// 入力中の文字の控え
-// ===================================================
-
-// iOS Safari では、日本語の未確定文字が入ったままボタンを押すと、
-// 確定されずに消えてしまうことがある。
-// 1文字打つごとに控えを取り、保存時に欄が空なら控えを使う。
-const draftValues = new WeakMap();
-
-function rememberValue(el) {
-  if (el && el.matches && el.matches('input[type="text"], textarea')) {
-    draftValues.set(el, el.value);
-  }
-}
-
-// 1文字打つごとに控える
-document.body.addEventListener('input', (event) => rememberValue(event.target));
-
-// 変換中（未確定）の文字も控える
-document.body.addEventListener('compositionupdate', (event) => rememberValue(event.target));
-
-// ボタンに指が触れた瞬間に、画面上の入力欄をすべて控える。
-// 未確定の文字が消えるのは指を離したあとなので、この時点ならまだ残っている。
-document.body.addEventListener('pointerdown', (event) => {
-  if (!event.target.closest('button')) return;
-  for (const el of document.querySelectorAll('input[type="text"], textarea')) {
-    rememberValue(el);
-  }
-}, true);
-
-// 入力欄から文字を読み取る（空なら控えを見る）
-function readValue(el) {
-  const current = el.value.trim();
-  if (current) return current;
-  return (draftValues.get(el) || '').trim();
-}
-
-// フォームを空に戻す（控えも一緒に消す）
-function resetForm(formEl) {
-  for (const el of formEl.querySelectorAll('input[type="text"], textarea')) {
-    draftValues.delete(el);
-  }
-  formEl.reset();
-}
-
-// ===================================================
 // 画面の切り替え
 // ===================================================
 
@@ -459,7 +414,7 @@ function openPlanDialog(date, plan = null) {
   planDialogDate = date;
   editingPlanId = plan ? plan.id : null;
 
-  resetForm(planFormEl);
+  planFormEl.reset();
   planErrorEl.hidden = true;
 
   planDialogTitleEl.textContent = plan ? '予定を編集' : '予定を追加';
@@ -523,7 +478,7 @@ document.getElementById('plan-cancel').addEventListener('click', () => {
 planFormEl.addEventListener('submit', (event) => {
   event.preventDefault();
 
-  const title = readValue(planTitleEl);
+  const title = planTitleEl.value.trim();
   const start = planStartEl.value;
   const end = planEndEl.value;
 
@@ -545,8 +500,8 @@ planFormEl.addEventListener('submit', (event) => {
     start,
     end,
     title,
-    place: readValue(planPlaceEl),
-    memo: readValue(planMemoEl),
+    place: planPlaceEl.value.trim(),
+    memo: planMemoEl.value.trim(),
   };
 
   if (editingPlanId) {
@@ -620,7 +575,7 @@ function findItem(itemId) {
 itemFormEl.addEventListener('submit', (event) => {
   event.preventDefault();
 
-  const name = readValue(itemInputEl);
+  const name = itemInputEl.value.trim();
   if (!name) return;
 
   const trip = findTrip(currentTripId);
@@ -630,7 +585,6 @@ itemFormEl.addEventListener('submit', (event) => {
   saveTrips();
   renderItems(trip);
 
-  draftValues.delete(itemInputEl);
   itemInputEl.value = '';
   itemInputEl.focus(); // 続けて入力できるようにする
 });
@@ -707,6 +661,13 @@ document.querySelector('.tabs').addEventListener('click', (event) => {
 // 新規作成フォーム
 // ===================================================
 
+// 日付を選んだ時点でピッカーを閉じる（毎回チェックマークを押さずに済む）
+document.body.addEventListener('change', (event) => {
+  if (event.target.matches('input[type="date"]') && event.target.value) {
+    event.target.blur();
+  }
+});
+
 const formEl = document.getElementById('trip-form');
 const inputNameEl = document.getElementById('input-name');
 const inputStartEl = document.getElementById('input-start');
@@ -720,7 +681,7 @@ let editingTripId = null;
 
 document.getElementById('btn-new-trip').addEventListener('click', () => {
   editingTripId = null;
-  resetForm(formEl);
+  formEl.reset();
   hideFormError();
   editTitleEl.textContent = '新しい旅行';
   showScreen('edit');
@@ -734,7 +695,6 @@ document.getElementById('btn-edit-trip').addEventListener('click', () => {
   editingTripId = trip.id;
   hideFormError();
   editTitleEl.textContent = '旅行を編集';
-  draftValues.delete(inputNameEl);
   inputNameEl.value = trip.name;
   inputStartEl.value = trip.startDate;
   inputEndEl.value = trip.endDate;
@@ -767,7 +727,7 @@ function validateTripInput(name, startDate, endDate) {
 formEl.addEventListener('submit', (event) => {
   event.preventDefault(); // ページの再読み込みを止める
 
-  const name = readValue(inputNameEl);
+  const name = inputNameEl.value.trim();
   const startDate = inputStartEl.value;
   const endDate = inputEndEl.value;
 
