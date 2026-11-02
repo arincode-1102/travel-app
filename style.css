@@ -600,3 +600,24 @@ input[type="time"] {
 .time-row .field {
   min-width: 0;
 }
+
+/* iOS は日付・時刻の文字を内部パーツで描くため、専用の指定が要る */
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value {
+  text-align: left;
+  margin: 0;
+}
+
+/* 未入力のときに高さがつぶれないように */
+input[type="date"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit {
+  padding: 0;
+}
+
+/* ---- バージョン表示（反映確認用）---- */
+.version {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #a3aab4;
+  text-align: center;
+}
