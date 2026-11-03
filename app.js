@@ -772,6 +772,114 @@ formEl.addEventListener('submit', (event) => {
 });
 
 // ===================================================
+// バックアップ（書き出し・読み込み）
+// ===================================================
+
+// 書き出すファイルの形。version を入れておくと、
+// 将来データ構造を変えたときに読み分けられる。
+const BACKUP_VERSION = 1;
+
+document.getElementById('btn-export').addEventListener('click', () => {
+  if (trips.length === 0) {
+    alert('書き出す旅行がありません。');
+    return;
+  }
+
+  const backup = {
+    app: 'travel-app',
+    version: BACKUP_VERSION,
+    exportedAt: new Date().toISOString(),
+    trips,
+  };
+
+  // 文字列 → ファイルとして扱えるオブジェクト → 一時的なURL、の順に変換する
+  const json = JSON.stringify(backup, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `travel-app-backup-${todayIso()}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  // iOS では保存の処理が始まる前に消すと失敗するため、少し待ってから片付ける
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+});
+
+// 読み込みボタン → 隠してあるファイル選択を開く
+document.getElementById('btn-import').addEventListener('click', () => {
+  document.getElementById('import-file').click();
+});
+
+document.getElementById('import-file').addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    try {
+      importBackup(String(reader.result));
+    } catch (error) {
+      alert(`読み込めませんでした。\n${error.message}`);
+    }
+    event.target.value = ''; // 同じファイルをもう一度選べるようにする
+  };
+
+  reader.onerror = () => {
+    alert('ファイルを読めませんでした。');
+    event.target.value = '';
+  };
+
+  reader.readAsText(file);
+});
+
+// 外から来たデータなので、そのまま信用せず中身を確かめる
+function importBackup(text) {
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error('ファイルの形式が正しくありません。');
+  }
+
+  if (!data || data.app !== 'travel-app' || !Array.isArray(data.trips)) {
+    throw new Error('このアプリのバックアップファイルではないようです。');
+  }
+
+  // 1件ずつ、必要な項目がそろっているか確認しながら作り直す
+  const imported = data.trips.map((trip, i) => {
+    if (!trip || !trip.name || !trip.startDate || !trip.endDate) {
+      throw new Error(`${i + 1}件目の旅行のデータが壊れています。`);
+    }
+    return {
+      id: trip.id || createId(),
+      name: String(trip.name),
+      startDate: trip.startDate,
+      endDate: trip.endDate,
+      plans: Array.isArray(trip.plans) ? trip.plans : [],
+      items: Array.isArray(trip.items) ? trip.items : [],
+    };
+  });
+
+  const message =
+    `読み込むと、いまの旅行${trips.length}件はすべて消えて、\n` +
+    `ファイルの旅行${imported.length}件に置き換わります。\n` +
+    `よろしいですか？`;
+  if (!confirm(message)) return;
+
+  trips = imported;
+  currentTripId = null;
+  saveTrips();
+  renderHome();
+  showScreen('home');
+
+  alert(`${imported.length}件の旅行を読み込みました。`);
+}
+
+// ===================================================
 // 起動
 // ===================================================
 

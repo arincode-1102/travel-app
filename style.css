@@ -621,3 +621,33 @@ input[type="time"]::-webkit-datetime-edit {
   color: #a3aab4;
   text-align: center;
 }
+
+/* ---- バックアップ ---- */
+.backup {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid #e3e6ea;
+}
+
+.backup-title {
+  margin: 0 0 4px;
+  font-size: 14px;
+}
+
+.backup-note {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #6b7480;
+}
+
+.backup-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.backup-actions .btn {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+}
